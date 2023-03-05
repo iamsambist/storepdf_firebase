@@ -1,5 +1,6 @@
 package com.sunil.internshala;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
@@ -17,14 +18,26 @@ import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
 
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 private AppCompatEditText mtitle,mdes;
 private ImageButton mimg;
 private TextView mgett;
+private Button mupload;
     private static final int PERMISSION_REQUEST_CODE = 1;
     private static final int PICK_PDF_REQUEST_CODE = 2;
 
@@ -37,6 +50,7 @@ private TextView mgett;
         mdes=findViewById(R.id.mdes);
         mimg=findViewById(R.id.mimgbutton);
         mgett=findViewById(R.id.mgett);
+        mupload=findViewById(R.id.mupload);
 
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -56,6 +70,46 @@ private TextView mgett;
                }
             }
         });
+
+        mupload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference storageRef = storage.getReference().
+                        child("pdfs/" + UUID.randomUUID().toString() + ".pdf");
+
+                storageRef.putFile(selectedFileUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                        storageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                // Create a new PdfFile object with the title, description, and PDF download URL
+                                makefile pdfFile = new makefile(mtitle.getText().toString(),
+                                       mdes.getText().toString(), uri.toString());
+
+                                // Save the PdfFile object to the Firebase Realtime Database
+                                DatabaseReference pdfRef = FirebaseDatabase.getInstance().getReference("pdfs").push();
+                                pdfRef.setValue(pdfFile);
+
+                                // Display a success message to the user
+                                Toast.makeText(MainActivity.this, "PDF file uploaded successfully", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MainActivity.this, "failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+// mupload bracket
+            }
+        });
+
     }
 
     private boolean checkStoragePermission() {

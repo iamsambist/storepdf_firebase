@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "662211163475",
+    "project_id": "pdf-files-43633",
+    "storage_bucket": "pdf-files-43633.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:662211163475:android:2f2b796a4ba9ee41c0dda6",
+        "android_client_info": {
+          "package_name": "com.sunil.internshala"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "662211163475-hhfra5brr9et5ffdbvk3cqr0fgqalvk7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMfhiRI1yv1QqF_T4SuLpD2df5lfPCx-U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "662211163475-hhfra5brr9et5ffdbvk3cqr0fgqalvk7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
