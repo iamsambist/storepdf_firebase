@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import android.provider.OpenableColumns;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -74,42 +75,56 @@ private Button mupload;
         mupload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(checkAllConstraints()){
+                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                    StorageReference storageRef = storage.getReference().
+                            child("pdfs/" + UUID.randomUUID().toString() + ".pdf");
 
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReference().
-                        child("pdfs/" + UUID.randomUUID().toString() + ".pdf");
+                    storageRef.putFile(selectedFileUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
-                storageRef.putFile(selectedFileUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            storageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    // Create a new PdfFile object with the title, description, and PDF download URL
+                                    makefile pdfFile = new makefile(mtitle.getText().toString(),
+                                            mdes.getText().toString(), uri.toString());
 
-                        storageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                // Create a new PdfFile object with the title, description, and PDF download URL
-                                makefile pdfFile = new makefile(mtitle.getText().toString(),
-                                       mdes.getText().toString(), uri.toString());
+                                    // Save the PdfFile object to the Firebase Realtime Database
+                                    DatabaseReference pdfRef = FirebaseDatabase.getInstance().getReference("pdfs").push();
+                                    pdfRef.setValue(pdfFile);
 
-                                // Save the PdfFile object to the Firebase Realtime Database
-                                DatabaseReference pdfRef = FirebaseDatabase.getInstance().getReference("pdfs").push();
-                                pdfRef.setValue(pdfFile);
+                                    // Display a success message to the user
+                                    Toast.makeText(MainActivity.this, "PDF file uploaded successfully", Toast.LENGTH_SHORT).show();
+                                }
+                            });
 
-                                // Display a success message to the user
-                                Toast.makeText(MainActivity.this, "PDF file uploaded successfully", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(MainActivity.this, "failed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(MainActivity.this, "failed", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                }
+
+
 // mupload bracket
             }
         });
 
+    }
+
+    private boolean checkAllConstraints() {
+        if (TextUtils.isEmpty(mtitle.getText().toString()) ||
+                TextUtils.isEmpty(mdes.getText().toString()) ||
+                TextUtils.isEmpty(mgett.getText().toString())){
+            Toast.makeText(this, "fill All the field", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
 
     private boolean checkStoragePermission() {

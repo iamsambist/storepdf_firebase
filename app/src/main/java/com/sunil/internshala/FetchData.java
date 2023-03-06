@@ -90,9 +90,6 @@ List<Data> values=new ArrayList<>();
         index=index+1;
         if (index < values.size()) {
             loadData(index);
-            String url = values.get(index).getUrl();
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(intent);
         }else{
             Toast.makeText(this, "Last Data Item", Toast.LENGTH_SHORT).show();
         }
